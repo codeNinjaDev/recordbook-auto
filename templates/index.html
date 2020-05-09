@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <form action="/generatedocx">
+      <input type="submit" value="Export Document" class="btn btn-primary">
+
+    </form>
+
+    <h2>Leadership Experiences</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Leadership Activity</th>
+          <th scope="col">Role</th>
+          <th scope="col">Level</th>
+            <th scope="col">Duties</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in leadership %}
+
+            <tr>
+
+                <td>{{ entry["year"] }}</td>
+                <td>{{ entry["activity"] }}</td>
+                <td>{{ entry["role"] }}</td>
+                <td>{{ entry["level"] }}</td>
+                <td>{{ entry["duties"] }}</td>
+
+            </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+
+
+    <h2>Community Service</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Role</th>
+          <th scope="col">Service Activity</th>
+          <th scope="col">Importance and Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in service %}
+
+            <tr>
+
+                <td>{{ entry["year"] }}</td>
+                <td>{{ entry["role"] }}</td>
+                <td>{{ entry["activity"] }}</td>
+                <td>{{ entry["impact"] }}</td>
+
+            </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+
+    <h2>Awards</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Level</th>
+          <th scope="col">Recognition</th>
+          <th scope="col">Importance to You</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in awards %}
+
+            <tr>
+
+                <td>{{ entry["year"] }}</td>
+                <td>{{ entry["level"] }}</td>
+                <td>{{ entry["recognition"] }}</td>
+                <td>{{ entry["importance"] }}</td>
+            </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+
+    <h2>College and Career Exploration</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Activity Title</th>
+          <th scope="col">What did you learn or do?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in career %}
+            <tr>
+                <td>{{ entry["year"] }}</td>
+                <td>{{ entry["activity"] }}</td>
+                <td>{{ entry["importance"] }}</td>
+            </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+{% endblock %}
+

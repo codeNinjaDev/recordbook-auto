@@ -21,6 +21,20 @@ class ServiceRole(Enum):
     MEMBER = "M"
     PRIMARY = "P"
 
+class RecordbookDict:
+    def __init__(self):
+        pass
+
+    def create_recordbook_dict(self):
+        book_dict = {
+                "personal_info": { "name": "", "county": "", "district": "", "division": "", "category": "" },
+                "leadership": [],
+                "service": [],
+                "awards": [],
+                "career": []
+                }
+        return book_dict
+
 class RecordbookWriter:
 
     def __init__(self, document_name):
@@ -35,10 +49,10 @@ class RecordbookWriter:
         self.category = tables[0].cell(1, 3)
 
         self.leadership_form = tables[6].rows[3:]
-        self.service_form = tables[8].rows[3:] 
-        self.award_form = tables[12].rows[3:] 
-        self.career_form = tables[16].rows[6:]        
-    
+        self.service_form = tables[8].rows[3:]
+        self.award_form = tables[12].rows[3:]
+        self.career_form = tables[16].rows[6:]
+
     def row_empty(self, row):
         i = 0
         for cell in row.cells:
@@ -46,7 +60,7 @@ class RecordbookWriter:
                 return False
             i += 1
         return True
-    
+
     def get_empty_row(self, rows):
         curr_row = None
         for row in rows:
@@ -65,12 +79,8 @@ class RecordbookWriter:
         self.document.save()
 
     def append_leadership(self, activity, role, level, year=str(datetime.datetime.today().year), duties=""):
-        if not isinstance(role, LeadershipRole):
-            raise TypeError("Role must be of type LeadershipRole")
- 
-        if not isinstance(level, Level):
-            raise TypeError("Level must be of type Level")
-        
+
+
         curr_row = self.get_empty_row(self.leadership_form)
         if not curr_row:
             curr_row = self.document.tables[6].add_row()
@@ -78,15 +88,15 @@ class RecordbookWriter:
 
         row_cells[1].text = year
         row_cells[2].text = activity
-        row_cells[3].text = role.value
-        row_cells[4].text = level.value
+        row_cells[3].text = role
+        row_cells[4].text = level
         row_cells[5].text = duties
         self.document.save(self.document_name)
-    
+
     def append_service(self, role, activity, year=str(datetime.datetime.today().year), impact=""):
         if not isinstance(role, ServiceRole):
             raise TypeError("Role must be of type ServiceRole")
- 
+
         curr_row = self.get_empty_row(self.service_form)
         if not curr_row:
             curr_row = self.document.tables[8].add_row()
@@ -101,7 +111,7 @@ class RecordbookWriter:
     def append_award(self, level, recognition, year=str(datetime.datetime.today().year), importance=""):
         if not isinstance(level, Level):
             raise TypeError("level must be of type Level")
- 
+
         curr_row = self.get_empty_row(self.award_form)
         if not curr_row:
             curr_row = self.document.tables[12].add_row()

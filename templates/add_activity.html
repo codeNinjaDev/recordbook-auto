@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add Activity
+{% endblock %}
+
+{% block main %}
+    <select id="forms" onchange="changeForm()" name="forms">
+      <option value="leadership">Leadership</option>
+      <option value="service">Service</option>
+      <option value="awards">Awards</option>
+      <option value="career">Career</option>
+    </select>
+
+    <!--- Leadership Form --->
+    <div id="leadership" class="entry_form">
+        <form id="leadership_form" action="/activity" method="post">
+          <div class="row">
+            <div class="col">
+              <input name="year" type="number" class="form-control" placeholder="Year">
+            </div>
+            <div class="col">
+              <input id="l-activity" name="l-activity" type="text" class="form-control" placeholder="Leadership Activity">
+            </div>
+            <div class="col">
+                <select id="l-roles" name="l-roles" form="leadership_form">
+                  <option value="E">Elected</option>
+                  <option value="A">Appointed</option>
+                  <option value="V">Volunteer</option>
+                  <option value="P">Promotional</option>
+                </select>
+                <select id="l-level" name="l-level" form="leadership_form">
+                  <option value="Cl">Club</option>
+                  <option value="Co">County</option>
+                  <option value="D">District</option>
+                  <option value="S">State</option>
+                </select>
+            </div>
+            <div class="col">
+                <textarea name="duties" rows="4" cols="50">
+                    Responsibilities / Duties / Accomplishments
+                </textarea>
+            </div>
+          </div>
+          <input name="type" value="leadership" hidden>
+          <input type="submit" class="btn btn-primary" onclick="return submitLeadership();">
+        </form>
+    </div>
+
+    <!--- Service Form --->
+    <div id="service" class="entry_form" hidden>
+        <form id="service_form" action="/activity" method="post">
+          <div class="row">
+            <div class="col">
+              <input type="number" class="form-control" placeholder="Year">
+            </div>
+            <div class="col">
+                <select id="s-roles" name="s-roles" form="service_form">
+                  <option value="Y">Yourself</option>
+                  <option value="M">Member of a Group</option>
+                  <option value="P">Primary Leadership</option>
+                </select>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" placeholder="Service Activity">
+            </div>
+
+            <div class="col">
+                <textarea id="impact" rows="4" cols="50">
+                    Importance and Impact
+                </textarea>
+            </div>
+          </div>
+          <input name="type" value="service" hidden>
+          <input type="submit" class="btn btn-primary" onclick="return submitService();">
+        </form>
+    </div>
+
+    {% block js %}
+        <script src="/static/add_activity.js"></script>
+    {% endblock %}
+
+{% endblock %}
+
