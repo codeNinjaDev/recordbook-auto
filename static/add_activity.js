@@ -20,7 +20,37 @@ function submitLeadership() {
     if (activity === "") {
         return false;
     }
-    
+
+    return true;
+
+}
+
+function submitService() {
+    let activity = document.querySelector("#s-activity").value;
+    if (activity === "") {
+        return false;
+    }
+
+    return true;
+
+}
+
+function submitAward() {
+    let activity = document.querySelector("#a-recognition").value;
+    if (activity === "") {
+        return false;
+    }
+
+    return true;
+
+}
+
+function submitCareer() {
+    let activity = document.querySelector("#c-activity").value;
+    if (activity === "") {
+        return false;
+    }
+
     return true;
 
 }

@@ -27,7 +27,7 @@ class RecordbookDict:
 
     def create_recordbook_dict(self):
         book_dict = {
-                "personal_info": { "name": "", "county": "", "district": "", "division": "", "category": "" },
+                "personal_info": { "name": "", "county": "", "district": "", "division": "", "category": "", "club": ""},
                 "leadership": [],
                 "service": [],
                 "awards": [],
@@ -73,10 +73,10 @@ class RecordbookWriter:
     def fill_info(self, name="", county="", district="", division="", category=""):
         self.name.text = name
         self.county.text = county
-        self.district = district
-        self.division = division
-        self.category = category
-        self.document.save()
+        self.district.text = district
+        self.division.text = division
+        self.category.text = category
+        self.document.save(self.document_name)
 
     def append_leadership(self, activity, role, level, year=str(datetime.datetime.today().year), duties=""):
 
@@ -94,8 +94,6 @@ class RecordbookWriter:
         self.document.save(self.document_name)
 
     def append_service(self, role, activity, year=str(datetime.datetime.today().year), impact=""):
-        if not isinstance(role, ServiceRole):
-            raise TypeError("Role must be of type ServiceRole")
 
         curr_row = self.get_empty_row(self.service_form)
         if not curr_row:
@@ -103,14 +101,12 @@ class RecordbookWriter:
         row_cells = curr_row.cells
 
         row_cells[1].text = year
-        row_cells[2].text = role.value
+        row_cells[2].text = role
         row_cells[3].text = activity
         row_cells[4].text = impact
         self.document.save(self.document_name)
 
     def append_award(self, level, recognition, year=str(datetime.datetime.today().year), importance=""):
-        if not isinstance(level, Level):
-            raise TypeError("level must be of type Level")
 
         curr_row = self.get_empty_row(self.award_form)
         if not curr_row:
@@ -118,7 +114,7 @@ class RecordbookWriter:
         row_cells = curr_row.cells
 
         row_cells[1].text = year
-        row_cells[2].text = level.value
+        row_cells[2].text = level
         row_cells[3].text = recognition
         row_cells[4].text = importance
         self.document.save(self.document_name)

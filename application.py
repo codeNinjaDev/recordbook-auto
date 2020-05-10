@@ -11,6 +11,8 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
+from user import *
 from helpers import apology, login_required
 
 # Configure application
@@ -38,115 +40,38 @@ Session(app)
 db = SQL("sqlite:///record.db")
 
 
-
 @app.route("/")
 @app.route("/home")
 @login_required
-def index():
-    data = get_dict()
-    return render_template("index.html", leadership=data["leadership"])
+def index_user():
+    return user_index(db)
+
+@app.route("/info", methods=["GET", "POST"])
+@login_required
+def info_user():
+    return user_info(request, db)
+
 
 @app.route("/activity", methods=["GET", "POST"])
 @login_required
-def add_activity():
+def add_activity_user():
+    return user_activity(request, db, session)
 
-    if request.method == "POST":
-        form_type = request.form.get("type")
-
-        if form_type == "leadership":
-            year = request.form.get("year")
-            activity = request.form.get("l-activity")
-            role = request.form.get("l-roles")
-            level = request.form.get("l-level")
-            duties = request.form.get("duties")
-            file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-                          id=session["user_id"])[0]["file_path"])
-
-            file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-                                  id=session["user_id"])[0]["file_path"])
-
-            with open(file_path) as json_file:
-                file = json.load(json_file)
-                file["leadership"].append({
-                        "year": year,
-                        "activity": activity,
-                        "role": role,
-                        "level": level,
-                        "duties": duties
-                    })
-                with open(file_path, "w") as fp:
-                    json.dump(file, fp)
-            return redirect("/")
-        elif form_type == "service":
-            pass
-        else:
-            return render_template("add_activity.html")
-    else:
-        return render_template("add_activity.html")
-
-
-@app.route("/history")
-@login_required
-def history():
-    return render_template("history.html")
 
 @app.route("/generatedocx")
 @login_required
-def generate_book():
-    data = get_dict()
-
-    email = str(db.execute("SELECT username FROM users WHERE id = :id",
-                      id=session["user_id"])[0]["username"]) + ".docx"
-
-    shutil.copyfile("report-form.docx", email)
-    writer = RecordbookWriter(email)
-
-    for entry in data["leadership"]:
-        writer.append_leadership(entry["activity"], entry["role"], entry["level"], year=entry["year"], duties=entry["duties"])
-
-    return send_file(email, as_attachment=True)
+def generate_book_user():
+    return user_generate_book(db, session)
 
 @app.route("/login", methods=["GET", "POST"])
-def login():
+def login_user():
     """Log user in"""
-
-    # Forget any user_id
-    session.clear()
-
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
-
-        # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
-
-        # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
-
-        # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
-
-        # Redirect user to home page
-        return redirect("/")
-
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
+    return user_login(request, db, session)
 
 
 @app.route("/logout")
-def logout():
+def logout_user():
     """Log user out"""
-
     # Forget any user_id
     session.clear()
 
@@ -155,55 +80,15 @@ def logout():
 
 @app.route("/reset", methods=["GET", "POST"])
 @login_required
-def reset():
+def reset_user():
+    return user_reset(request, db, session)
 
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        password_hash = next(iter(db.execute("SELECT hash FROM users WHERE id = :user_id",
-                          user_id=session["user_id"])[0].values()))
-        if not check_password_hash(password_hash, request.form.get("oldPassword")):
-            return render_template("reset.html", error=True)
-
-        db.execute("UPDATE users SET hash = :pass_hash WHERE id = :user_id",
-            pass_hash=generate_password_hash(request.form.get("newPassword")), user_id=session["user_id"])
-        flash("Reset password")
-        return redirect("/")
-
-    else:
-        return render_template("reset.html", error=False)
 
 
 @app.route("/register", methods=["GET", "POST"])
-def register():
+def register_user():
+    return user_register(request, db)
 
-    if request.method == "POST":
-
-        username = request.form.get("username")
-        password_hash = generate_password_hash(request.form.get("password"))
-        # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=username)
-        print(rows)
-        if len(rows) != 0:
-            return render_template("register.html", error=True)
-
-        dir_path = "./data/" + str(username) + "/"
-        file_path = dir_path + str(username) + ".json"
-        try:
-            os.mkdir(dir_path)
-        except FileExistsError:
-            pass
-        book_dict = RecordbookDict().create_recordbook_dict()
-
-        with open(file_path, "w") as fp:
-            json.dump(book_dict, fp)
-
-        db.execute("INSERT INTO users (username, hash, file_path) VALUES (:username, :password_hash, :path)", username=username, password_hash=password_hash, path=file_path)
-        return redirect('/login')
-    else:
-        """Register user"""
-        return render_template("register.html", error=False)
 
 def errorhandler(e):
     """Handle error"""
@@ -211,13 +96,6 @@ def errorhandler(e):
         e = InternalServerError()
     return apology(e.name, e.code)
 
-
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
-def get_dict():
-    file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-                          id=session["user_id"])[0]["file_path"])
-    with open(file_path) as json_file:
-        file = json.load(json_file)
-        return file
