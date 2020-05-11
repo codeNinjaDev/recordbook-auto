@@ -234,9 +234,9 @@ def user_register(request, db):
                           username=username)
         print(rows)
         if len(rows) != 0:
-            return render_template("user_register.html", error=True)
+            return render_template("register.html", error=True)
 
-        dir_path = "./data/" + str(username) + "/"
+        dir_path = "./data/" + str(username) + "/user"
         file_path = dir_path + str(username) + ".json"
         try:
             os.mkdir(dir_path)
@@ -273,7 +273,7 @@ def user_invites(request, db):
         file["personal_info"]["club"] = file["invitations"][username]
         file["invitations"].pop(username)
         dump_dict(file, db)
-        db.execute("UPDATE users SET manager_id = :manager_id WHERE id=:user_id", manager_id=manager_id, user_id=session["user_id"])
+        db.execute("UPDATE users (manager_id) VALUES (:manager_id)", manager_id=manager_id)
         return redirect('/user/')
     else:
         return render_template("user_invitations.html", invites=file["invitations"])

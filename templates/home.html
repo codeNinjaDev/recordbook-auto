@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Portfolio
+{% endblock %}
+
+{% block main %}
+        <!--- Career Form --->
+        <div class="jumbotron">
+          <h1 class="display-4">Welcome to Recordbook Streamlining</h1>
+          <p class="lead">This is a powerful tool to help your club keep track of your Texas 4-H activities.</p>
+          <hr class="my-4">
+          <p>You can sign up as a club manager or as a student.</p>
+          <a class="btn btn-primary btn-lg" href="/manager" role="button">Go to Manager Portal</a>
+          <a class="btn btn-primary btn-lg" href="/user" role="button">Go to Student Portal</a>
+
+        </div>
+        {% block js %}
+    {% endblock %}
+{% endblock %}
+

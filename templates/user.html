@@ -5,10 +5,13 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/generatedocx">
+    <form action="/user/generatedocx">
       <input type="submit" value="Export Document" class="btn btn-primary">
 
     </form>
+    <ul class="navbar-nav mr-auto mt-2">
+          <li class="nav-item"><a class="nav-link btn btn-primary stretched-link" href="/user/activity">Add Activity</a></li>
+    </ul>
 
     <h2>Leadership Experiences</h2>
     <table class="table table-striped">
