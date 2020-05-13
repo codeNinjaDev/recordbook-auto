@@ -13,14 +13,12 @@
     </select>
 
     {% for user in users %}
-      {% for key, email in user.items() %}
         <div class="form-check">
-          <input type="checkbox" class="checkbox" form="leadership_form" name="users" value = "{{ email }}" class="form-check-input">
-          <label class="form-check-label">{{ email }}</label>
+          <input type="checkbox" class="checkbox" form="leadership_form" name="users" value = "{{ user }}" class="form-check-input">
+          <label class="form-check-label">{{ user }}</label>
         </div>
-      {% endfor %}
-
     {% endfor %}
+
 
     <!--- Leadership Form --->
     <div id="leadership" class="entry_form">

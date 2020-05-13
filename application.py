@@ -10,19 +10,23 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_sqlalchemy import SQLAlchemy
 
-
-from user import *
+from database import Student, Manager
+from student import *
 from manager import *
-from helpers import apology, user_login_required, manager_login_required
+from helpers import apology, student_login_required, manager_login_required
 
 # Configure application
 app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///record.db'
 
-# Ensure responses aren't cached
+db.init_app(app)
+
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -37,62 +41,66 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///record.db")
+with app.app_context():
+    try:
+        db.create_all()
+    except:
+        pass
 
 @app.route("/")
+@app.route("/home")
 def home():
     return render_template("home.html")
 
-@app.route("/user/")
-@user_login_required
-def index_user():
-    return user_index(db)
+@app.route("/student/")
+@student_login_required
+def index_student():
+    return student_index(db)
 
-@app.route("/user/info", methods=["GET", "POST"])
-@user_login_required
-def info_user():
-    return user_info(request, db)
-
-
-@app.route("/user/activity", methods=["GET", "POST"])
-@user_login_required
-def add_activity_user():
-    return user_activity(request, db, session)
+@app.route("/student/info", methods=["GET", "POST"])
+@student_login_required
+def info_student():
+    return student_info(request, db)
 
 
-@app.route("/user/generatedocx")
-@user_login_required
-def generate_book_user():
-    return user_generate_book(db, session)
-
-@app.route("/user/login", methods=["GET", "POST"])
-def login_user():
-    """Log user in"""
-    return user_login(request, db, session)
+@app.route("/student/activity", methods=["GET", "POST"])
+@student_login_required
+def add_activity_student():
+    return student_activity(request, db, session)
 
 
-@app.route("/user/logout")
-def logout_user():
-    """Log user out"""
-    # Forget any user_id
+@app.route("/student/generatedocx")
+@student_login_required
+def generate_book_student():
+    return student_generate_book(db, session)
+
+@app.route("/student/login", methods=["GET", "POST"])
+def login_student():
+    """Log student in"""
+    return student_login(request, db, session)
+
+
+@app.route("/student/logout")
+def logout_student():
+    """Log student out"""
+    # Forget any student_id
     session.clear()
 
-    # Redirect user to login form
+    # Redirect student to login form
     return redirect("/")
 
-@app.route("/user/reset", methods=["GET", "POST"])
-@user_login_required
-def reset_user():
-    return user_reset(request, db, session)
+@app.route("/student/reset", methods=["GET", "POST"])
+@student_login_required
+def reset_student():
+    return student_reset(request, db, session)
 
-@app.route("/user/register", methods=["GET", "POST"])
-def register_user():
-    return user_register(request, db)
-@app.route("/user/invites", methods=["GET", "POST"])
-@user_login_required
-def invites_user():
-    return user_invites(request, db)
+@app.route("/student/register", methods=["GET", "POST"])
+def register_student():
+    return student_register(request, db)
+@app.route("/student/invites", methods=["GET", "POST"])
+@student_login_required
+def invites_student():
+    return student_invites(request, db)
 
 # MANAGER endpoints
 

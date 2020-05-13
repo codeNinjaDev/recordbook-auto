@@ -8,7 +8,7 @@
     <h2>Pending invitations</h2>
          <ul class="list-group">
             {% for email, club_name in invites.items() %}
-                <form  action="/user/invites" method="post">
+                <form  action="/student/invites" method="post">
                     <input id="{{ email }}"value="accept" name="type" hidden>
                     <input value="{{ email }}" name="email" hidden>
               <li class="list-group-item"> {{ email }} | {{ club_name }} <button type="submit" class="primary">Accept</button> <button type="submit" class="danger" onclick="deleteInvite('{{ emails }}')">Delete</button></li>

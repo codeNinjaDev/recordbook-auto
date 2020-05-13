@@ -21,7 +21,7 @@ def apology(message, code=400):
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
 
-def user_login_required(f):
+def student_login_required(f):
     """
     Decorate routes to require login.
 
@@ -30,7 +30,7 @@ def user_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
-            return redirect("/user/login")
+            return redirect("/student/login")
         return f(*args, **kwargs)
     return decorated_function
 

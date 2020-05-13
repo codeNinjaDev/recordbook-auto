@@ -12,21 +12,21 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import apology
+from database import Manager, Student, db
 
 # USER DATA FUNCTIONS
 
 # Gets user's data
 def get_dict(db):
-    file_path = str(db.execute("SELECT file_path FROM managers WHERE id = :id",
-                          id=session["manager_id"])[0]["file_path"])
+    file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
     with open(file_path) as json_file:
         file = json.load(json_file)
         return file
 
+
 # Gets user's data
 def dump_dict(file, db):
-    file_path = str(db.execute("SELECT file_path FROM managers WHERE id = :id",
-                          id=session["manager_id"])[0]["file_path"])
+    file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
     with open(file_path, "w") as json_file:
         json.dump(file, json_file)
         return
@@ -35,8 +35,7 @@ def dump_dict(file, db):
 
 def manager_index(db):
     data = get_dict(db)
-    email = str(db.execute("SELECT username FROM managers WHERE id = :id",
-                     id=session["manager_id"])[0]["username"]) + ".docx"
+    email = Manager.query.filter_by(id=session["manager_id"]).first().username + ".docx"
     try:
         os.remove(email)
     except:
@@ -63,20 +62,19 @@ def manager_info(request, db):
 
 def manager_activity(request, db, session):
 
-    users = db.execute("SELECT username FROM users WHERE manager_id = :id",
-            id=session["manager_id"])
+    users = [student.username for student in Student.query.filter_by(manager_id=session["manager_id"]).all()]
+    print(users)
 
     if request.method == "POST":
         selected_user_emails = request.form.getlist("users")
         user_file_paths = []
         print(selected_user_emails)
         for email in selected_user_emails:
-            user_file_paths.append(str(db.execute("SELECT file_path FROM users WHERE username = :email",
-            email=email)[0]["file_path"]))
+            user_file_paths.append(Student.query.filter_by(username=email).first().file_path)
             print(email)
 
-        file_path = str(db.execute("SELECT file_path FROM managers WHERE id = :id",
-            id=session["manager_id"])[0]["file_path"])
+        file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
+
         form_type = request.form.get("type")
 
         if form_type == "leadership":
@@ -137,8 +135,7 @@ def manager_activity(request, db, session):
 
 def manager_generate_book(db, session):
     data = get_dict(db)
-    email = str(db.execute("SELECT username FROM managers WHERE id = :id",
-                      id=session["manager_id"])[0]["username"]) + ".docx"
+    email = Manager.query.filter_by(id=session["manager_id"]).first().username + ".docx"
 
     shutil.copyfile("report-form.docx", email)
     writer = RecordbookWriter(email)
@@ -175,15 +172,14 @@ def manager_login(request, db, session):
             return apology("must provide password", 403)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM managers WHERE username = :username",
-                          username=request.form.get("username"))
+        manager = Manager.query.filter_by(username=request.form.get("username")).first()
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if not manager or not check_password_hash(manager.psswd_hash, request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["manager_id"] = rows[0]["id"]
+        session["manager_id"] = manager.id
 
         # Redirect user to home page
         return redirect("/manager")
@@ -196,13 +192,15 @@ def manager_reset(request, db, session):
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        password_hash = next(iter(db.execute("SELECT hash FROM managers WHERE id = :user_id",
-                          user_id=session["manager_id"])[0].values()))
+        manager = Manager.query.filter_by(id=session["manager_id"]).first()
+
+        password_hash = manager.psswd_hash
         if not check_password_hash(password_hash, request.form.get("oldPassword")):
             return render_template("reset.html", error=True)
 
-        db.execute("UPDATE managers SET hash = :pass_hash WHERE id = :user_id",
-            pass_hash=generate_password_hash(request.form.get("newPassword")), user_id=session["manager_id"])
+        manager.psswd_hash =generate_password_hash(request.form.get("newPassword"))
+        db.session.commit()
+
         flash("Reset password")
         return redirect("/manager")
 
@@ -215,10 +213,9 @@ def manager_register(request, db):
         username = request.form.get("username")
         password_hash = generate_password_hash(request.form.get("password"))
         # Query database for username
-        rows = db.execute("SELECT * FROM managers WHERE username = :username",
-                          username=username)
-        print(rows)
-        if len(rows) != 0:
+        managers = Manager.query.filter_by(username=username).all()
+
+        if managers:
             return render_template("manager_register.html", error=True)
 
         dir_path = "./data/manager/" + str(username) + "/"
@@ -232,7 +229,9 @@ def manager_register(request, db):
         with open(file_path, "w") as fp:
             json.dump(book_dict, fp)
 
-        db.execute("INSERT INTO managers (username, hash, file_path) VALUES (:username, :password_hash, :path)", username=username, password_hash=password_hash, path=file_path)
+        manager = Manager(username=username, psswd_hash=password_hash, file_path=file_path)
+        db.session.add(manager)
+        db.session.commit()
         return redirect('/manager/login')
     else:
         """Register manager"""
@@ -240,8 +239,8 @@ def manager_register(request, db):
 
 def manager_invite(request, db, session):
 
-    username = db.execute("SELECT username FROM managers WHERE id = :id",
-                id=session["manager_id"])[0]["username"]
+    username = Manager.query.filter_by(id=session["manager_id"]).first().username
+
 
     if request.method == "POST":
         user_email = request.form.get("email")
@@ -253,8 +252,7 @@ def manager_invite(request, db, session):
             club_name = request.form.get("name")
 
         try:
-            path = db.execute("SELECT file_path FROM users WHERE username = :username",
-                username=user_email)[0]["file_path"]
+            path = Student.query.filter_by(username=user_email).first().file_path
             with open(path) as json_file:
                 file = json.load(json_file)
                 if "invitations" not in file.keys():
@@ -265,9 +263,6 @@ def manager_invite(request, db, session):
                 return redirect("/manager")
         except:
             return render_template("manager_invite.html")
-
-
-
 
 
     return render_template("manager_invite.html")

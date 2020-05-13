@@ -11,32 +11,31 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from database import Student, Manager
 from helpers import apology
 
 # USER DATA FUNCTIONS
 
 # Gets user's data
 def get_dict(db):
-    file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-                          id=session["user_id"])[0]["file_path"])
+    file_path = Student.query.filter_by(id=session["user_id"]).first().file_path
     with open(file_path) as json_file:
         file = json.load(json_file)
         return file
 
 # Gets user's data
 def dump_dict(file, db):
-    file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-                          id=session["user_id"])[0]["file_path"])
+    file_path = Student.query.filter_by(id=session["user_id"]).first().file_path
+
     with open(file_path, "w") as json_file:
         json.dump(file, json_file)
         return
 
 # ENDPOINTS
 
-def user_index(db):
+def student_index(db):
     data = get_dict(db)
-    email = str(db.execute("SELECT username FROM users WHERE id = :id",
-                     id=session["user_id"])[0]["username"]) + ".docx"
+    email = Student.query.filter_by(id=session["user_id"]).first().username + ".docx"
     try:
         os.remove(email)
     except:
@@ -44,7 +43,7 @@ def user_index(db):
     return render_template("user.html", leadership=data["leadership"], service=data["service"], awards=data["awards"], career=data["career"])
 
 
-def user_info(request, db):
+def student_info(request, db):
     file = get_dict(db)
     if request.method == "POST":
 
@@ -66,10 +65,9 @@ def user_info(request, db):
         district=file["personal_info"]["district"], category=file["personal_info"]["category"],
         division=file["personal_info"]["division"], club=file["personal_info"]["club"])
 
-def user_activity(request, db, session):
+def student_activity(request, db, session):
     if request.method == "POST":
-        file_path = str(db.execute("SELECT file_path FROM users WHERE id = :id",
-            id=session["user_id"])[0]["file_path"])
+        file_path = Student.query.filter_by(id=session["user_id"]).first().file_path
         form_type = request.form.get("type")
 
         if form_type == "leadership":
@@ -91,7 +89,7 @@ def user_activity(request, db, session):
                     })
                 dump_dict(file, db)
 
-            return redirect("/user")
+            return redirect("/student")
 
         elif form_type == "service":
 
@@ -109,7 +107,7 @@ def user_activity(request, db, session):
                         "impact": impact
                     })
                 dump_dict(file, db)
-            return redirect("/user")
+            return redirect("/student")
 
         elif form_type == "award":
 
@@ -129,7 +127,7 @@ def user_activity(request, db, session):
                     })
                 dump_dict(file, db)
 
-            return redirect("/user")
+            return redirect("/student")
         elif form_type == "career":
             year = request.form.get("year")
             activity = request.form.get("c-activity")
@@ -143,17 +141,16 @@ def user_activity(request, db, session):
                         "importance": importance
                     })
                 dump_dict(file, db)
-            return redirect("/user")
+            return redirect("/student")
         else:
             return render_template("add_activity.html")
     else:
         return render_template("add_activity.html")
 
 
-def user_generate_book(db, session):
+def student_generate_book(db, session):
     data = get_dict(db)
-    email = str(db.execute("SELECT username FROM users WHERE id = :id",
-                      id=session["user_id"])[0]["username"]) + ".docx"
+    email = Student.query.filter_by(id=session["user_id"]).first().username + ".docx"
 
     shutil.copyfile("report-form.docx", email)
     writer = RecordbookWriter(email)
@@ -174,7 +171,7 @@ def user_generate_book(db, session):
 
     return send_file(email, as_attachment=True)
 
-def user_login(request, db, session):
+def student_login(request, db, session):
     # Forget any user_id
     session.clear()
 
@@ -190,50 +187,47 @@ def user_login(request, db, session):
             return apology("must provide password", 403)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
+        student = Student.query.filter_by(username=request.form.get("username")).first()
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if not student or not check_password_hash(student.psswd_hash, request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = student.id
 
         # Redirect user to home page
-        return redirect("/user")
+        return redirect("/student")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("user_login.html")
 
-def user_reset(request, db, session):
+def student_reset(request, db, session):
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        password_hash = next(iter(db.execute("SELECT hash FROM users WHERE id = :user_id",
-                          user_id=session["user_id"])[0].values()))
-        if not check_password_hash(password_hash, request.form.get("oldPassword")):
+        curr_student = Student.query.filter_by(id=session["user_id"]).first()
+        if not check_password_hash(curr_student.psswd_hash, request.form.get("oldPassword")):
             return render_template("reset.html", error=True)
 
-        db.execute("UPDATE users SET hash = :pass_hash WHERE id = :user_id",
-            pass_hash=generate_password_hash(request.form.get("newPassword")), user_id=session["user_id"])
+        curr_student.psswd_hash = generate_password_hash(request.form.get("newPassword"))
+        db.session.commit()
         flash("Reset password")
-        return redirect("/user")
+        return redirect("/student")
 
     else:
         return render_template("user_reset.html", error=False)
 
-def user_register(request, db):
+def student_register(request, db):
     if request.method == "POST":
 
         username = request.form.get("username")
         password_hash = generate_password_hash(request.form.get("password"))
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=username)
-        print(rows)
-        if len(rows) != 0:
+        students = Student.query.filter_by(username=username).all()
+
+        if students:
             return render_template("user_register.html", error=True)
 
         dir_path = "./data/" + str(username) + "/"
@@ -246,14 +240,16 @@ def user_register(request, db):
 
         with open(file_path, "w") as fp:
             json.dump(book_dict, fp)
+        student = Student(username=username, psswd_hash=password_hash, file_path=file_path)
+        db.session.add(student)
+        db.session.commit()
 
-        db.execute("INSERT INTO users (username, hash, file_path) VALUES (:username, :password_hash, :path)", username=username, password_hash=password_hash, path=file_path)
-        return redirect('/user/login')
+        return redirect('/student/login')
     else:
         """Register user"""
         return render_template("user_register.html", error=False)
 
-def user_invites(request, db):
+def student_invites(request, db):
     file = get_dict(db)
     if "invitations" not in file.keys():
         file["invitations"] = dict()
@@ -266,14 +262,17 @@ def user_invites(request, db):
             file["invitations"].pop(username)
             dump_dict(file, db)
             return render_template("user_invitations.html", invites=file["invitations"])
-        # Query database for username
-        manager_id = int(db.execute("SELECT id FROM managers WHERE username = :username",
-                          username=username)[0]["id"])
+
+        manager_id = Manager.query.filter_by(username=username).first().id
 
         file["personal_info"]["club"] = file["invitations"][username]
         file["invitations"].pop(username)
         dump_dict(file, db)
-        db.execute("UPDATE users SET manager_id = :manager_id WHERE id=:user_id", manager_id=manager_id, user_id=session["user_id"])
-        return redirect('/user/')
+        student = Student.query.filter_by(id=session["user_id"]).first()
+        student.manager_id = manager_id
+        print(student.id)
+        db.session.commit()
+
+        return redirect('/student/')
     else:
         return render_template("user_invitations.html", invites=file["invitations"])
