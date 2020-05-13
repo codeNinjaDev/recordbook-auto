@@ -61,7 +61,6 @@ def manager_info(request, db):
         district=file["personal_info"]["district"], club=file["personal_info"]["club"])
 
 def manager_activity(request, db, session):
-
     users = [student.username for student in Student.query.filter_by(manager_id=session["manager_id"]).all()]
     print(users)
 
@@ -129,9 +128,9 @@ def manager_activity(request, db, session):
 
             return redirect("/manager")
         else:
-            return render_template("manager_add_activity.html", users=users)
+            return render_template("add_activity.html", user="manager", students=users)
     else:
-        return render_template("manager_add_activity.html", users=users)
+        return render_template("add_activity.html", user="manager", students=users)
 
 def manager_generate_book(db, session):
     data = get_dict(db)

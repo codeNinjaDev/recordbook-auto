@@ -97,6 +97,7 @@ def reset_student():
 @app.route("/student/register", methods=["GET", "POST"])
 def register_student():
     return student_register(request, db)
+
 @app.route("/student/invites", methods=["GET", "POST"])
 @student_login_required
 def invites_student():

@@ -11,10 +11,17 @@
       <option value="awards">Awards</option>
       <option value="career">Career</option>
     </select>
-
+    {% if user == "manager" %}
+      {% for email in students %}
+          <div class="form-check">
+            <input type="checkbox" class="checkbox" form="leadership_form" name="users" value = "{{ email }}" class="form-check-input">
+            <label class="form-check-label">{{ email }}</label>
+          </div>
+      {% endfor %}
+    {% endif %}
     <!--- Leadership Form --->
     <div id="leadership" class="entry_form">
-        <form id="leadership_form" action="/student/activity" method="post">
+        <form id="leadership_form" action="/{{ user }}/activity" method="post">
           <div class="row">
             <div class="col">
               <input name="year" type="number" class="form-control" placeholder="Year">
@@ -49,7 +56,7 @@
 
     <!--- Service Form --->
     <div id="service" class="entry_form" hidden>
-        <form id="service_form" action="/student/activity" method="post">
+        <form id="service_form" action="/{{ user }}/activity" method="post">
           <div class="row">
             <div class="col">
               <input type="number" name="year" class="form-control" placeholder="Year">
@@ -79,7 +86,7 @@
 
         <!--- Awards Form --->
     <div id="awards" class="entry_form" hidden>
-        <form id="award_form" action="/student/activity" method="post">
+        <form id="award_form" action="/{{ user }}/activity" method="post">
           <div class="row">
             <div class="col">
               <input type="number" name="year" class="form-control" placeholder="Year">
@@ -111,7 +118,7 @@
 
         <!--- Career Form --->
     <div id="career" class="entry_form" hidden>
-        <form id="career_form" action="/student/activity" method="post">
+        <form id="career_form" action="/{{ user }}/activity" method="post">
           <div class="row">
             <div class="col">
               <input type="number" name="year" class="form-control" placeholder="Year">

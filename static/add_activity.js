@@ -13,6 +13,16 @@ function changeForm() {
 
     }
 
+    try {
+        var checkboxes = document.getElementsByClassName("checkbox");
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].form = currForm + "_form";
+        }
+    }
+    catch(err) {
+
+    }
+
 }
 
 function submitLeadership() {

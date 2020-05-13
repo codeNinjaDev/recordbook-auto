@@ -143,9 +143,9 @@ def student_activity(request, db, session):
                 dump_dict(file, db)
             return redirect("/student")
         else:
-            return render_template("add_activity.html")
+            return render_template("add_activity.html", user="student")
     else:
-        return render_template("add_activity.html")
+        return render_template("add_activity.html", user="student")
 
 
 def student_generate_book(db, session):
