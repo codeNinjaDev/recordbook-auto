@@ -4,6 +4,11 @@ from enum import Enum
 
 import datetime
 
+def xstr(s):
+    if s is None:
+        return ''
+    return str(s)
+
 class Level(Enum):
     CLUB = "Cl"
     COUNTY = "Co"
@@ -71,11 +76,11 @@ class RecordbookWriter:
 
 
     def fill_info(self, name="", county="", district="", division="", category=""):
-        self.name.text = name
-        self.county.text = county
-        self.district.text = district
-        self.division.text = division
-        self.category.text = category
+        self.name.text = xstr(name)
+        self.county.text = xstr(county)
+        self.district.text = xstr(district)
+        self.division.text = xstr(division)
+        self.category.text = xstr(category)
         self.document.save(self.document_name)
 
     def append_leadership(self, activity, role, level, year=str(datetime.datetime.today().year), duties=""):
@@ -86,11 +91,11 @@ class RecordbookWriter:
             curr_row = self.document.tables[6].add_row()
         row_cells = curr_row.cells
 
-        row_cells[1].text = year
-        row_cells[2].text = activity
-        row_cells[3].text = role
-        row_cells[4].text = level
-        row_cells[5].text = duties
+        row_cells[1].text = xstr(year)
+        row_cells[2].text = xstr(activity)
+        row_cells[3].text = xstr(role)
+        row_cells[4].text = xstr(level)
+        row_cells[5].text = xstr(duties)
         self.document.save(self.document_name)
 
     def append_service(self, role, activity, year=str(datetime.datetime.today().year), impact=""):
@@ -100,10 +105,10 @@ class RecordbookWriter:
             curr_row = self.document.tables[8].add_row()
         row_cells = curr_row.cells
 
-        row_cells[1].text = year
-        row_cells[2].text = role
-        row_cells[3].text = activity
-        row_cells[4].text = impact
+        row_cells[1].text = xstr(year)
+        row_cells[2].text = xstr(role)
+        row_cells[3].text = xstr(activity)
+        row_cells[4].text = xstr(impact)
         self.document.save(self.document_name)
 
     def append_award(self, level, recognition, year=str(datetime.datetime.today().year), importance=""):
@@ -113,10 +118,10 @@ class RecordbookWriter:
             curr_row = self.document.tables[12].add_row()
         row_cells = curr_row.cells
 
-        row_cells[1].text = year
-        row_cells[2].text = level
-        row_cells[3].text = recognition
-        row_cells[4].text = importance
+        row_cells[1].text = xstr(year)
+        row_cells[2].text = xstr(level)
+        row_cells[3].text = xstr(recognition)
+        row_cells[4].text = xstr(importance)
         self.document.save(self.document_name)
 
     def append_career(self, activity, year=str(datetime.datetime.today().year), importance=""):
@@ -125,7 +130,7 @@ class RecordbookWriter:
             curr_row = self.document.tables[16].add_row()
         row_cells = curr_row.cells
 
-        row_cells[1].text = year
-        row_cells[2].text = activity
-        row_cells[3].text = importance
+        row_cells[1].text = xstr(year)
+        row_cells[2].text = xstr(activity)
+        row_cells[3].text = xstr(importance)
         self.document.save(self.document_name)

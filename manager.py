@@ -3,7 +3,7 @@ import shutil
 
 import json
 from docx import Document
-from recordbook_writer import RecordbookDict, RecordbookWriter, LeadershipRole, ServiceRole, Level
+from recordbook_writer import xstr, RecordbookDict, RecordbookWriter, LeadershipRole, ServiceRole, Level
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, flash, url_for, send_file
 from flask_session import Session
@@ -12,67 +12,55 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import apology
-from database import Manager, Student, db
-
-# USER DATA FUNCTIONS
-
-# Gets user's data
-def get_dict(db):
-    file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
-    with open(file_path) as json_file:
-        file = json.load(json_file)
-        return file
-
-
-# Gets user's data
-def dump_dict(file, db):
-    file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
-    with open(file_path, "w") as json_file:
-        json.dump(file, json_file)
-        return
+from database import *
 
 # ENDPOINTS
 
 def manager_index(db):
-    data = get_dict(db)
-    email = Manager.query.filter_by(id=session["manager_id"]).first().username + ".docx"
+
+
+    leadership_experiences = Leadership.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    service_experiences = Service.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    awards = Award.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    careers =  Career.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+
+    email = Student.query.filter_by(id=session["manager_id"]).first().username + ".docx"
     try:
         os.remove(email)
     except:
         pass
-    return render_template("manager.html", leadership=data["leadership"], service=data["service"], awards=data["awards"], career=data["career"])
+    return render_template("index.html", user="manager", leadership=leadership_experiences, service=service_experiences, awards=awards, career=careers)
 
 
 def manager_info(request, db):
-    file = get_dict(db)
+    curr_manager = Student.query.filter_by(id=session["manager_id"]).first()
     if request.method == "POST":
 
         if request.form.get("name"):
-            file["personal_info"]["name"] = request.form.get("name")
+            curr_manager.name = request.form.get("name")
         if request.form.get("county"):
-            file["personal_info"]["county"] = request.form.get("county")
+            curr_manager.county = request.form.get("county")
         if request.form.get("district"):
-            file["personal_info"]["district"] = request.form.get("district")
+            curr_manager.district = request.form.get("district")
         if request.form.get("club"):
-            file["personal_info"]["club"] = request.form.get("club")
-        dump_dict(file, db)
+            curr_manager.club_name = request.form.get("club")
+        db.session.commit()
 
-    return render_template("manager_info.html", name=file["personal_info"]["name"], county=file["personal_info"]["county"],
-        district=file["personal_info"]["district"], club=file["personal_info"]["club"])
+
+    return render_template("info.html", user="manager", name =xstr(curr_manager.name), county =xstr(curr_manager.county),
+        district =xstr(curr_manager.district), club=xstr(curr_manager.club_name))
 
 def manager_activity(request, db, session):
-    users = [student.username for student in Student.query.filter_by(manager_id=session["manager_id"]).all()]
-    print(users)
+    students = [student.username for student in Student.query.filter_by(manager_id=session["manager_id"]).all()]
+
+    selected_users = []
 
     if request.method == "POST":
         selected_user_emails = request.form.getlist("users")
-        user_file_paths = []
-        print(selected_user_emails)
-        for email in selected_user_emails:
-            user_file_paths.append(Student.query.filter_by(username=email).first().file_path)
-            print(email)
 
-        file_path = Manager.query.filter_by(id=session["manager_id"]).first().file_path
+        for email in selected_user_emails:
+
+            selected_users.append(Student.query.filter_by(username=email).first())
 
         form_type = request.form.get("type")
 
@@ -84,11 +72,10 @@ def manager_activity(request, db, session):
             level = request.form.get("l-level")
             duties = request.form.get("duties")
 
-            json_leadership(db, file_path, year=year, activity=activity, role=role, level=level, duties=duties)
-            for path in user_file_paths:
-                json_leadership(db, path, year=year, activity=activity, role=role, level=level, duties=duties)
+            input_leadership(db, session["manager_id"], user_type="MANAGER", year=year, activity=activity, role=role, level=level, duties=duties)
+            for user in selected_users:
+                input_leadership(db, user.id, user_type="STUDENT", year=year, activity=activity, role=role, level=level, duties=duties)
 
-            return redirect("/manager")
 
         elif form_type == "service":
 
@@ -97,12 +84,9 @@ def manager_activity(request, db, session):
             role = request.form.get("s-roles")
             impact = request.form.get("impact")
 
-            json_service(db, file_path, year=year, activity=activity, role=role, impact=impact)
-
-            for path in user_file_paths:
-                json_service(db, path, year=year, activity=activity, role=role, impact=impact)
-
-            return redirect("/manager")
+            input_service(db, session["manager_id"], user_type="MANAGER", year=year, activity=activity, role=role, impact=impact)
+            for user in selected_users:
+                input_service(db, user.id, user_type="STUDENT", year=year, activity=activity, role=role, impact=impact)
 
         elif form_type == "award":
 
@@ -112,46 +96,52 @@ def manager_activity(request, db, session):
             importance = request.form.get("importance")
 
 
-            json_awards(db, file_path, year=year, recognition=recognition, level=level, importance=importance)
-            for path in user_file_paths:
-                json_awards(db, path, year=year, recognition=recognition, level=level, importance=importance)
-            return redirect("/manager")
+            input_awards(db, session["manager_id"], user_type="MANAGER", year=year, recognition=recognition, level=level, importance=importance)
+            for user in selected_users:
+                input_awards(db, user.id, user_type="STUDENT", year=year, recognition=recognition, level=level, importance=importance)
+
 
         elif form_type == "career":
             year = request.form.get("year")
             activity = request.form.get("c-activity")
             importance = request.form.get("importance")
 
-            json_career(db, file_path, year=year, activity=activity, importance=importance)
-            for path in user_file_paths:
-                json_career(db, path, year=year, activity=activity, importance=importance)
+            input_career(db, session["manager_id"], user_type="MANAGER", year=year, activity=activity, importance=importance)
+            for user in selected_users:
+                input_award(db, user.id, user_type="STUDENT", year=year, activity=activity, importance=importance)
 
-            return redirect("/manager")
         else:
-            return render_template("add_activity.html", user="manager", students=users)
+            return render_template("add_activity.html", user="manager", students=students)
+
+        return redirect("/manager")
     else:
-        return render_template("add_activity.html", user="manager", students=users)
+        return render_template("add_activity.html", user="manager", students=students)
 
 def manager_generate_book(db, session):
-    data = get_dict(db)
-    email = Manager.query.filter_by(id=session["manager_id"]).first().username + ".docx"
+    curr_manager = Student.query.filter_by(id=session["manager_id"]).first()
+    email = curr_manager.username + ".docx"
 
     shutil.copyfile("report-form.docx", email)
     writer = RecordbookWriter(email)
 
-    writer.fill_info(name=data["personal_info"]["name"], county=data["personal_info"]["county"], district=data["personal_info"]["district"],
-        category=data["personal_info"]["category"], division=data["personal_info"]["division"])
-    for entry in data["leadership"]:
-        writer.append_leadership(entry["activity"], entry["role"], entry["level"], year=entry["year"], duties=entry["duties"])
+    leadership_experiences = Leadership.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    service_experiences = Service.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    awards = Award.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
+    careers =  Career.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
 
-    for entry in data["service"]:
-        writer.append_service(entry["role"], entry["activity"], year=entry["year"], impact=entry["impact"])
+    writer.fill_info(name=curr_manager.name, county=curr_manager.county, district=curr_manager.district,
+        category=curr_manager.category, division=curr_manager.division)
+    for entry in leadership_experiences:
+        writer.append_leadership(entry.activity, entry.role, entry.level, year=entry.year, duties=entry.duties)
 
-    for entry in data["awards"]:
-        writer.append_award(entry["level"], entry["recognition"], year=entry["year"], importance=entry["importance"])
+    for entry in service_experiences:
+        writer.append_service(entry.role, entry.activity, year=entry.year, impact=entry.impact)
 
-    for entry in data["career"]:
-        writer.append_career(entry["activity"], year=entry["year"], importance=entry["importance"])
+    for entry in awards:
+        writer.append_award(entry.level, entry.recognition, year=entry.year, importance=entry.importance)
+
+    for entry in careers:
+        writer.append_career(entry.activity, year=entry.year, importance=entry.importance)
 
     return send_file(email, as_attachment=True)
 
@@ -185,7 +175,7 @@ def manager_login(request, db, session):
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("manager_login.html")
+        return render_template("login.html", user="manager")
 
 def manager_reset(request, db, session):
     # User reached route via POST (as by submitting a form via POST)
@@ -215,99 +205,63 @@ def manager_register(request, db):
         managers = Manager.query.filter_by(username=username).all()
 
         if managers:
-            return render_template("manager_register.html", error=True)
+            return render_template("register.html", user="manager", error=True)
 
-        dir_path = "./data/manager/" + str(username) + "/"
-        file_path = dir_path + str(username) + ".json"
-        try:
-            os.mkdir(dir_path)
-        except FileExistsError:
-            pass
-        book_dict = RecordbookDict().create_recordbook_dict()
-
-        with open(file_path, "w") as fp:
-            json.dump(book_dict, fp)
-
-        manager = Manager(username=username, psswd_hash=password_hash, file_path=file_path)
+        manager = Manager(username=username, psswd_hash=password_hash)
         db.session.add(manager)
         db.session.commit()
         return redirect('/manager/login')
     else:
         """Register manager"""
-        return render_template("manager_register.html", error=False)
+        return render_template("register.html", user="manager", error=False)
 
 def manager_invite(request, db, session):
 
-    username = Manager.query.filter_by(id=session["manager_id"]).first().username
-
+    manager = Manager.query.filter_by(id=session["manager_id"]).first()
 
     if request.method == "POST":
-        user_email = request.form.get("email")
-        data = get_dict(db)
+        user = Student.query.filter_by(username=request.form.get("email")).first()
+        if not user:
+            return render_template("manager_invite.html")
 
-        if data["personal_info"]["club"]:
-            club_name = data["personal_info"]["club"]
+        if manager.club_name:
+            club_name = manager.club_name
         else:
             club_name = request.form.get("name")
 
         try:
-            path = Student.query.filter_by(username=user_email).first().file_path
-            with open(path) as json_file:
-                file = json.load(json_file)
-                if "invitations" not in file.keys():
-                    file["invitations"] = dict()
-                file["invitations"][username] = club_name
-                with open(path, "w") as dump_file:
-                    json.dump(file, dump_file)
-                return redirect("/manager")
+            invite = Invitation(student_id=user.id, manager_id=manager.id, club_name=club_name, email=manager.username)
+            db.session.add(invite)
+            db.session.commit()
+            return redirect("/manager")
         except:
             return render_template("manager_invite.html")
 
 
     return render_template("manager_invite.html")
 
-def json_leadership(db, path, year="", role="", level="", activity="", duties=""):
-    with open(path) as json_file:
-        file = json.load(json_file)
-        file["leadership"].append({
-                "year": year,
-                "activity": activity,
-                "role": role,
-                "level": level,
-                "duties": duties
-            })
-        with open(path, "w") as fp:
-            json.dump(file, fp)
-def json_service(db, path, year="", role="", activity="", impact=""):
-    with open(path) as json_file:
-        file = json.load(json_file)
-        file["service"].append({
-                "year": year,
-                "role": role,
-                "activity": activity,
-                "impact": impact
-            })
-        with open(path, "w") as fp:
-            json.dump(file, fp)
-def json_awards(db, path, year="", level="", recognition="", importance=""):
-    with open(path) as json_file:
-        file = json.load(json_file)
-        file["awards"].append({
-                "year": year,
-                "level": level,
-                "recognition": recognition,
-                "importance": importance
-            })
-        with open(path, "w") as fp:
-            json.dump(file, fp)
+def input_leadership(db, user, user_type="STUDENT", year="", role="", level="", activity="", duties=""):
 
-def json_career(db, path, year="", activity="", importance=""):
-    with open(path) as json_file:
-        file = json.load(json_file)
-        file["career"].append({
-                "year": year,
-                "activity": activity,
-                "importance": importance
-            })
-        with open(path, "w") as fp:
-            json.dump(file, fp)
+    leadership = Leadership(user_id=user, user_type=user_type, year=year, activity=activity,
+        role=role, level=level, duties=duties)
+    db.session.add(leadership)
+    db.session.commit()
+
+def input_service(db, user, user_type="STUDENT", year="", role="", activity="", impact=""):
+    service = Service(user_id=user, user_type=user_type, year=year, activity=activity,
+                role=role, impact=impact)
+    db.session.add(service)
+    db.session.commit()
+
+def input_awards(db, user, user_type="STUDENT", year="", level="", recognition="", importance=""):
+    award = Award(user_id=user, user_type=user_type, year=year, level=level,
+                recognition
+                =recognition, importance=importance)
+    db.session.add(award)
+    db.session.commit()
+
+def input_career(db, user, user_type="STUDENT", year="", activity="", importance=""):
+    career = Career(user_id=user, user_type=user_type, year=year,
+        activity=activity, importance=importance)
+    db.session.add(career)
+    db.session.commit()
