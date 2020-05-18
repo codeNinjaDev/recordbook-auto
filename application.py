@@ -56,10 +56,10 @@ with app.app_context():
 def home():
     return render_template("home.html")
 
-@app.route("/student/")
+@app.route("/student/", methods=["GET", "POST"])
 @student_login_required
 def index_student():
-    return student_index(db)
+    return student_index(db, request)
 
 @app.route("/student/info", methods=["GET", "POST"])
 @student_login_required
@@ -83,6 +83,10 @@ def login_student():
     """Log student in"""
     return student_login(request, db, session)
 
+@app.route("/student/delete_account", methods=["GET", "POST"])
+@student_login_required
+def delete_student():
+    return student_delete(db, request)
 
 @app.route("/student/logout")
 def logout_student():
@@ -114,17 +118,20 @@ def generate_journal_student():
 
 # MANAGER endpoints
 
-
-@app.route("/manager/")
+@app.route("/manager/", methods=["GET", "POST"])
 @manager_login_required
 def index_manager():
-    return manager_index(db)
+    return manager_index(db, request)
+
+@app.route("/manager/delete_account", methods=["GET", "POST"])
+@manager_login_required
+def delete_manager():
+    return manager_delete(db, request)
 
 @app.route("/manager/info", methods=["GET", "POST"])
 @manager_login_required
 def info_manager():
     return manager_info(request, db)
-
 
 @app.route("/manager/activity", methods=["GET", "POST"])
 @manager_login_required

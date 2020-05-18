@@ -18,8 +18,33 @@ from app_forms import LeadershipForm, ServiceForm, CareerForm, AwardForm, Projec
 
 # ENDPOINTS
 
-def manager_index(db):
+def manager_index(db, request):
 
+    if request.method == "POST":
+        activity = request.form.get("activity")
+        activity_id = request.form.get("delete")
+
+        if activity == "leadership":
+            delete_leadership = Leadership.query.filter_by(user_id=session["manager_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_leadership)
+            db.session.commit()
+        elif activity == "service":
+            delete_service = Service.query.filter_by(user_id=session["manager_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_service)
+            db.session.commit()
+        elif activity == "award":
+            delete_award = Award.query.filter_by(user_id=session["manager_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_award)
+            db.session.commit()
+        elif activity == "career":
+            delete_career = Career.query.filter_by(user_id=session["manager_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_career)
+            db.session.commit()
+        elif activity == "project":
+            delete_project = Project.query.filter_by(user_id=session["manager_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_project)
+            db.session.commit()
+        return redirect("/manager")
 
     leadership_experiences = Leadership.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
     service_experiences = Service.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
@@ -184,6 +209,33 @@ def manager_generate_book(db, session):
         writer.append_career(entry.activity, year=entry.year, importance=entry.importance)
 
     return send_file(email, as_attachment=True)
+
+def manager_delete(db, request):
+    if request.method == "POST":
+        account_id = session["manager_id"]
+        account = Manager.query.filter(id=account_id).first()
+
+        leadership = Leadership.query.filter_by(user_id=account_id, user_type="MANAGER").all()
+        service = Service.query.filter_by(user_id=account_id, user_type="MANAGER").all()
+        award = Award.query.filter_by(user_id=account_id, user_type="MANAGER").all()
+        career = Career.query.filter_by(user_id=account_id, user_type="MANAGER").all()
+        project = Project.query.filter_by(user_id=account_id, user_type="MANAGER").all()
+
+        for l in leadership:
+            db.session.delete(l)
+        for s in service:
+            db.session.delete(s)
+        for a in award:
+            db.session.delete(a)
+        for c in career:
+            db.session.delete(c)
+        for p in project:
+            db.session.delete(p)
+
+        db.session.delete(account)
+        db.session.commit()
+        session.clear()
+        return redirect("/manager")
 
 def manager_login(request, db, session):
     # Forget any user_id

@@ -7,7 +7,6 @@
 {% block main %}
     <form action="/{{ user }}/generatedocx">
       <input type="submit" value="Generate Sample Report Form" class="btn btn-primary">
-
     </form>
     <form action="/{{ user }}/generatejournal">
       <input style="margin: 12px;" type="submit" value="Generate 4-H Journal" class="btn btn-info">
@@ -24,7 +23,7 @@
           <th scope="col">Leadership Activity</th>
           <th scope="col">Role</th>
           <th scope="col">Level</th>
-            <th scope="col">Duties</th>
+          <th scope="col">Duties</th>
         </tr>
       </thead>
       <tbody>
@@ -37,7 +36,13 @@
                 <td>{{ entry["role"] }}</td>
                 <td>{{ entry["level"] }}</td>
                 <td>{{ entry["duties"] }}</td>
+                <form action="/{{ user }}/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+                  <input name="activity" value="leadership" hidden>
+                  <input name="delete" value="{{ entry['id'] }}" hidden>
+                  <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                </form>
             </tr>
         {% endfor %}
 
@@ -64,7 +69,13 @@
                 <td>{{ entry["role"] }}</td>
                 <td>{{ entry["activity"] }}</td>
                 <td>{{ entry["impact"] }}</td>
+            <form action="/{{ user }}/" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+                <input name="activity" value="service" hidden>
+                <input name="delete" value="{{ entry['id'] }}" hidden>
+                <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                </form>
             </tr>
         {% endfor %}
 
@@ -90,6 +101,14 @@
                 <td>{{ entry["level"] }}</td>
                 <td>{{ entry["recognition"] }}</td>
                 <td>{{ entry["importance"] }}</td>
+                <form action="/{{ user }}/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                  <input name="activity" value="award" hidden>
+
+                  <input name="delete" value="{{ entry['id'] }}" hidden>
+                  <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                </form>
             </tr>
         {% endfor %}
 
@@ -111,6 +130,14 @@
                 <td>{{ entry["year"] }}</td>
                 <td>{{ entry["activity"] }}</td>
                 <td>{{ entry["importance"] }}</td>
+                <form action="/{{ user }}/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                  <input name="activity" value="career" hidden>
+
+                  <input name="delete" value="{{ entry['id'] }}" hidden>
+                  <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                </form>
             </tr>
         {% endfor %}
 
@@ -135,10 +162,24 @@
                 <td>{{ entry["activity"] }}</td>
                 <td>{{ entry["hours"] }}</td>
                 <td>{{ entry["importance"] }}</td>
+                <form action="/{{ user }}/" method="post">
+
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                  <input name="activity" value="project" hidden>
+
+                  <input name="delete" value="{{ entry['id'] }}" hidden>
+                  <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                </form>
             </tr>
         {% endfor %}
 
       </tbody>
     </table>
+
+    <form action="/{{ user }}/delete_account" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <button type="submit" class="btn btn-danger vertical-center">Delete Account</button>
+    </form>
 {% endblock %}
 

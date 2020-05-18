@@ -18,8 +18,33 @@ from auth_forms import RegisterForm, LoginForm, login
 from app_forms import LeadershipForm, ServiceForm, CareerForm, AwardForm, ProjectForm
 # ENDPOINTS
 
-def student_index(db):
+def student_index(db, request):
 
+    if request.method == "POST":
+        activity = request.form.get("activity")
+        activity_id = request.form.get("delete")
+
+        if activity == "leadership":
+            delete_leadership = Leadership.query.filter_by(user_id=session["user_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_leadership)
+            db.session.commit()
+        elif activity == "service":
+            delete_service = Service.query.filter_by(user_id=session["user_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_service)
+            db.session.commit()
+        elif activity == "award":
+            delete_award = Award.query.filter_by(user_id=session["user_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_award)
+            db.session.commit()
+        elif activity == "career":
+            delete_career = Career.query.filter_by(user_id=session["user_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_career)
+            db.session.commit()
+        elif activity == "project":
+            delete_project = Project.query.filter_by(user_id=session["user_id"], user_type="STUDENT", id=activity_id).first()
+            db.session.delete(delete_project)
+            db.session.commit()
+        return redirect("/student")
     session["pending_invites"] = len(Invitation.query.filter_by(student_id=session["user_id"]).all())
 
 
@@ -38,6 +63,33 @@ def student_index(db):
     except:
         pass
     return render_template("index.html", user="student", projects=projects, leadership=leadership_experiences, service=service_experiences, awards=awards, career=careers)
+
+def student_delete(db, request):
+    if request.method == "POST":
+        account_id = session["user_id"]
+        account = Student.query.filter_by(id=account_id).first()
+
+        leadership = Leadership.query.filter_by(user_id=account_id, user_type="STUDENT").all()
+        service = Service.query.filter_by(user_id=account_id, user_type="STUDENT").all()
+        award = Award.query.filter_by(user_id=account_id, user_type="STUDENT").all()
+        career = Career.query.filter_by(user_id=account_id, user_type="STUDENT").all()
+        project = Project.query.filter_by(user_id=account_id, user_type="STUDENT").all()
+
+        for l in leadership:
+            db.session.delete(l)
+        for s in service:
+            db.session.delete(s)
+        for a in award:
+            db.session.delete(a)
+        for c in career:
+            db.session.delete(c)
+        for p in project:
+            db.session.delete(p)
+
+        db.session.delete(account)
+        db.session.commit()
+        session.clear()
+        return redirect("/student")
 
 
 def student_info(request, db):
