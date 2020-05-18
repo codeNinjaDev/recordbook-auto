@@ -8,6 +8,7 @@
         <!--- Career Form --->
     <div id="info">
             <form class="form-horizontal" action="/{{ user }}/info" method="post">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="form-group">
         <label for="name" class="col-sm-2 control-label">Name</label>
           <input class="form-control" name="name" id="name" value = "{{ name }}" disabled>

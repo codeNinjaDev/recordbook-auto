@@ -26,7 +26,7 @@ def manager_index(db):
     awards = Award.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
     careers =  Career.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").all()
     projects =  Project.query.filter_by(user_id=session["manager_id"], user_type="MANAGER").order_by(Project.project_name, Project.year.desc()).all()
-
+    print(projects)
     email = Manager.query.filter_by(id=session["manager_id"]).first().username + ".docx"
     journal = Manager.query.filter_by(id=session["manager_id"]).first().username + "journal.docx"
     try:
@@ -57,7 +57,7 @@ def manager_info(request, db):
 
 def manager_activity(request, db, session):
     students = [student.username for student in Student.query.filter_by(manager_id=session["manager_id"]).all()]
-    print(students)
+
     selected_users = []
     student_leader = None
     if request.method == "POST":
@@ -91,26 +91,17 @@ def manager_activity(request, db, session):
             role=service_form.role.data, impact=service_form.importance.data)
         db.session.add(service)
         for user in selected_users:
-            if student_leader and student_leader.id == user.id:
-                student_form = Service(user_id=user.id, user_type="STUDENT", year=service_form.year.data, activity=service_form.activity.data,
-                role="P", impact=service_form.importance.data)
-            else:
-                student_form = Service(user_id=user.id, user_type="STUDENT", year=service_form.year.data, activity=service_form.activity.data,
+            student_form = Service(user_id=user.id, user_type="STUDENT", year=service_form.year.data, activity=service_form.activity.data,
                 role=service_form.role.data, impact=service_form.importance.data)
             db.session.add(student_form)
     elif award_form.award_submit.data and award_form.validate_on_submit():
         award = Award(user_id=session["manager_id"], user_type="MANAGER", year=award_form.year.data, level=award_form.level.data,
             recognition=award_form.recognition.data, importance=award_form.importance.data)
         db.session.add(award)
-        print(str(selected_users))
+
         for user in selected_users:
-            if student_leader and student_leader.id == user.id:
-                select_leader = Leadership(user_id=user.id, user_type="STUDENT", year=award_form.year.data, activity=award_form.recognition.data,
-                            role="?", level=award_form.level.data, duties=award_form.importance.data)
-                db.session.add(select_leader)
             student_form = Award(user_id=user.id, user_type="STUDENT", year=award_form.year.data, level=award_form.level.data,
                 recognition=award_form.recognition.data, importance=award_form.importance.data)
-            print(student_form)
             db.session.add(student_form)
     elif career_form.career_submit.data and career_form.validate_on_submit():
         career = Career(user_id=session["manager_id"], user_type="MANAGER", year=career_form.year.data,
@@ -118,10 +109,6 @@ def manager_activity(request, db, session):
         db.session.add(career)
 
         for user in selected_users:
-            if student_leader and student_leader.id == user.id:
-                select_leader = Leadership(user_id=user.id, user_type="STUDENT", year=career_form.year.data, activity=career_form.recognition.data,
-                            role="?", level="?", duties=career_form.importance.data)
-                db.session.add(select_leader)
             student_form = Career(user_id=user.id, user_type="STUDENT", year=career_form.year.data,
                 activity=career_form.activity.data, importance=career_form.importance.data)
             db.session.add(student_form)
@@ -130,15 +117,11 @@ def manager_activity(request, db, session):
         project = Project(user_id=session["manager_id"], user_type="MANAGER", project_name=project_form.project_name.data, year=project_form.year.data, hours=project_form.hours.data, activity=project_form.activity.data, importance=project_form.importance.data)
         db.session.add(project)
         for user in selected_users:
-            if student_leader and student_leader.id == user.id:
-                select_leader = Leadership(user_id=user.id, user_type="STUDENT", year=project_form.year.data, activity=project_form.activity.data,
-                            role="?", level="?", duties=project_form.importance.data)
-                db.session.add(select_leader)
-            student_form = Project(user_id=user.id, user_type="STUDENT", project_name=project_form.project_name.data, year=project_form.year.data, hours=project_form.hours.data, activity=project_form.activity.data, importance=project_form.importance.data)
+            student_form = Project(user_id=session["user_id"], user_type="STUDENT", project_name=project_form.project_name.data, year=project_form.year.data, hours=project_form.hours.data, activity=project_form.activity.data, importance=project_form.importance.data)
             db.session.add(student_form)
     else:
         return render_template("add_activity.html", leadership_form=leadership_form, service_form=service_form,
-            award_form=award_form, career_form=career_form, project_form=project_form, user="manager", students=students)
+            award_form=award_form, career_form=career_form, project_form=project_form, user="manager")
 
     db.session.commit()
 

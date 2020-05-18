@@ -1,11 +1,16 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Register
+    Reset Password
 {% endblock %}
 
 {% block main %}
-    <form action="/user/reset" method="post">
+    {% if user == "manager" %}
+        <h2>Reset Manager Password</h2>
+    {% else %}
+        <h2>Reset Student Password</h2>
+    {% endif %}
+    <form action="/{{ user }}/reset" method="post">
       <div class="form-group">
         {% if error %}
             <div class="alert alert-danger" role="alert">Password not correct</div>
@@ -16,6 +21,7 @@
         <div id="oldFail" class="alert alert-danger" role="alert" hidden>Must enter password</div>
       </div>
       <div class="form-group">
+     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <label for="newPassword">New Password</label>
         <input type="password"  class="form-control" name="newPassword" id="newPassword" placeholder="New password">
         <div id="newFail" class="alert alert-danger" role="alert" hidden>Must enter new password</div>

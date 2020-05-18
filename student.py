@@ -2,18 +2,20 @@ import os
 import shutil
 
 import json
-from docx import Document
-from recordbook_writer import xstr, RecordbookDict, RecordbookWriter, LeadershipRole, ServiceRole, Level
-from cs50 import SQL
+
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, flash, url_for, send_file
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from docx import Document
+from recordbook_writer import xstr, RecordbookWriter, JournalWriter
+
 from database import *
 from helpers import apology
-
+from auth_forms import RegisterForm, LoginForm, login
+from app_forms import LeadershipForm, ServiceForm, CareerForm, AwardForm, ProjectForm
 # ENDPOINTS
 
 def student_index(db):
@@ -25,13 +27,17 @@ def student_index(db):
     service_experiences = Service.query.filter_by(user_id=session["user_id"], user_type="STUDENT").all()
     awards = Award.query.filter_by(user_id=session["user_id"], user_type="STUDENT").all()
     careers =  Career.query.filter_by(user_id=session["user_id"], user_type="STUDENT").all()
+    projects =  Project.query.filter_by(user_id=session["user_id"], user_type="STUDENT").order_by(Project.project_name, Project.year.desc()).all()
 
     email = Student.query.filter_by(id=session["user_id"]).first().username + ".docx"
+    journal = Student.query.filter_by(id=session["user_id"]).first().username + "journal.docx"
+
     try:
         os.remove(email)
+        os.remove(journal)
     except:
         pass
-    return render_template("index.html", user="student", leadership=leadership_experiences, service=service_experiences, awards=awards, career=careers)
+    return render_template("index.html", user="student", projects=projects, leadership=leadership_experiences, service=service_experiences, awards=awards, career=careers)
 
 
 def student_info(request, db):
@@ -58,61 +64,50 @@ def student_info(request, db):
         division=xstr(curr_student.division), club=xstr(curr_student.club_name))
 
 def student_activity(request, db, session):
-    if request.method == "POST":
-        form_type = request.form.get("type")
 
-        if form_type == "leadership":
-
-            year = request.form.get("year")
-            activity = request.form.get("l-activity")
-            role = request.form.get("l-roles")
-            level = request.form.get("l-level")
-            duties = request.form.get("duties")
-
-            leadership = Leadership(user_id=session["user_id"], user_type="STUDENT", year=year, activity=activity,
-                role=role, level=level, duties=duties)
-            db.session.add(leadership)
-
-        elif form_type == "service":
-            year = request.form.get("year")
-            activity = request.form.get("s-activity")
-            role = request.form.get("s-roles")
-            impact = request.form.get("impact")
-
-            service = Service(user_id=session["user_id"], user_type="STUDENT", year=year, activity=activity,
-                role=role, impact=impact)
-            db.session.add(service)
-
-        elif form_type == "award":
-
-            year = request.form.get("year")
-            recognition = request.form.get("a-recognition")
-            level = request.form.get("a-levels")
-            importance = request.form.get("importance")
-
-            award = Award(user_id=session["user_id"], user_type="STUDENT", year=year, level=level,
-                recognition=recognition, importance=importance)
-            db.session.add(award)
-
-
-        elif form_type == "career":
-
-            year = request.form.get("year")
-            activity = request.form.get("c-activity")
-            importance = request.form.get("importance")
-            career = Career(user_id=session["user_id"], user_type="STUDENT", year=year,
-                activity=activity, importance=importance)
-            db.session.add(career)
-        else:
-            return render_template("add_activity.html", user="student")
-
-        db.session.commit()
-        return redirect("/student")
-
+    leadership_form = LeadershipForm()
+    service_form = ServiceForm()
+    career_form = CareerForm()
+    award_form = AwardForm()
+    project_form = ProjectForm()
+    if leadership_form.lead_submit.data and leadership_form.validate_on_submit():
+        leadership = Leadership(user_id=session["user_id"], user_type="STUDENT", year=leadership_form.year.data, activity=leadership_form.activity.data,
+            role=leadership_form.role.data, level=leadership_form.level.data, duties=leadership_form.importance.data)
+        db.session.add(leadership)
+    elif service_form.service_submit.data and service_form.validate_on_submit():
+        service = Service(user_id=session["user_id"], user_type="STUDENT", year=service_form.year.data, activity=service_form.activity.data,
+            role=service_form.role.data, impact=service_form.importance.data)
+        db.session.add(service)
+    elif award_form.award_submit.data and award_form.validate_on_submit():
+        award = Award(user_id=session["user_id"], user_type="STUDENT", year=award_form.year.data, level=award_form.level.data,
+            recognition=award_form.recognition.data, importance=award_form.importance.data)
+        db.session.add(award)
+    elif career_form.career_submit.data and career_form.validate_on_submit():
+        career = Career(user_id=session["user_id"], user_type="STUDENT", year=career_form.year.data,
+            activity=career_form.activity.data, importance=career_form.importance.data)
+        db.session.add(career)
+    elif project_form.project_submit.data and project_form.validate_on_submit():
+        project = Project(user_id=session["user_id"], user_type="STUDENT", project_name=project_form.project_name.data, year=project_form.year.data, hours=project_form.hours.data, activity=project_form.activity.data, importance=project_form.importance.data)
+        db.session.add(project)
     else:
-        return render_template("add_activity.html", user="student")
+        return render_template("add_activity.html", leadership_form=leadership_form, service_form=service_form,
+            award_form=award_form, career_form=career_form, project_form=project_form, user="student")
 
+    db.session.commit()
+    return redirect("/student")
 
+def student_generate_journal(db, session):
+    curr_student = Student.query.filter_by(id=session["user_id"]).first()
+    journal_name = curr_student.username + ".journal.docx"
+    journal = Document()
+    journal.save(journal_name)
+
+    writer = JournalWriter(journal_name)
+    project_objects = Project.query.filter_by(user_id=session["user_id"], user_type="STUDENT").with_entities(Project.project_name).distinct()
+
+    for project in project_objects:
+        writer.create_project_table(project.project_name, Project.query.filter_by(user_id=session["user_id"], user_type="STUDENT", project_name=project.project_name).all())
+    return send_file(journal_name, as_attachment=True)
 def student_generate_book(db, session):
     curr_student = Student.query.filter_by(id=session["user_id"]).first()
     email = curr_student.username + ".docx"
@@ -145,33 +140,16 @@ def student_login(request, db, session):
     # Forget any user_id
     session.clear()
 
+    login_form = LoginForm()
     # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
-
-        # Query database for username
-        student = Student.query.filter_by(username=request.form.get("username")).first()
-
+    if login_form.validate_on_submit():
         # Ensure username exists and password is correct
-        if not student or not check_password_hash(student.psswd_hash, request.form.get("password")):
-            return apology("invalid username and/or password", 403)
-
-        # Remember which user has logged in
-        session["user_id"] = student.id
-
-        # Redirect user to home page
-        return redirect("/student")
-
+        if login(db, login_form, session, user_type="student"):
+            return redirect("/student")
+        return apology("invalid username and/or password", 403)
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("login.html", user="student")
+        return render_template("login.html", login_form=login_form, user="student")
 
 def student_reset(request, db, session):
     # User reached route via POST (as by submitting a form via POST)
@@ -179,7 +157,7 @@ def student_reset(request, db, session):
 
         curr_student = Student.query.filter_by(id=session["user_id"]).first()
         if not check_password_hash(curr_student.psswd_hash, request.form.get("oldPassword")):
-            return render_template("reset.html", error=True)
+            return render_template("reset.html", user="student", error=True)
 
         curr_student.psswd_hash = generate_password_hash(request.form.get("newPassword"))
         db.session.commit()
@@ -187,7 +165,7 @@ def student_reset(request, db, session):
         return redirect("/student")
 
     else:
-        return render_template("user_reset.html", error=False)
+        return render_template("reset.html", user="student",error=False)
 
 def student_register(request, db):
     if request.method == "POST":
@@ -210,6 +188,7 @@ def student_register(request, db):
         return render_template("register.html", user="student", error=False)
 
 def student_invites(request, db):
+    session["pending_invites"] = len(Invitation.query.filter_by(student_id=session["user_id"]).all())
 
     if request.method == "POST":
 
@@ -217,7 +196,6 @@ def student_invites(request, db):
         accept = request.form.get("type")
         # TODO possible bug with duplicate emails
         curr_invitation = Invitation.query.filter_by(email=username).first()
-
 
         if accept == "delete":
             db.session.delete(curr_invitation)
@@ -238,3 +216,5 @@ def student_invites(request, db):
     else:
         invitations = Invitation.query.filter_by(student_id=session["user_id"]).all()
         return render_template("user_invitations.html", invites=invitations)
+
+

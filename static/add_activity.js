@@ -2,7 +2,7 @@
 function changeForm() {
     let currForm = document.querySelector("#forms").value;
 
-    var entryForms = document.getElementsByClassName("entry_form");
+    let entryForms = document.getElementsByClassName("entry_form");
 
     for (let i = 0; i < entryForms.length; i++) {
         if (entryForms[i].id == currForm) {
@@ -13,11 +13,23 @@ function changeForm() {
 
     }
 
-    var checkboxes = document.getElementsByClassName("checkbox");
+    let checkboxes = document.getElementsByClassName("checkbox");
     for (let i = 0; i < checkboxes.length; i++) {
         checkboxes[i].setAttribute("form", currForm + "_form");
     }
 
+    let leader = document.getElementById("leader");
+    let leaderDiv = document.getElementById("leaderDiv");
+
+    leader.setAttribute("form", currForm + "_form");
+    if (currForm != "leadership") {
+        console.log("hide leadership");
+        leaderDiv.hidden = false;
+        leader.disabled = false;
+    } else {
+        leaderDiv.hidden = true;
+        leader.disabled = true;
+    }
 
 }
 
@@ -53,6 +65,16 @@ function submitAward() {
 
 function submitCareer() {
     let activity = document.querySelector("#c-activity").value;
+    if (activity === "") {
+        return false;
+    }
+
+    return true;
+
+}
+
+function submitProject() {
+    let activity = document.querySelector("#p-activity").value;
     if (activity === "") {
         return false;
     }

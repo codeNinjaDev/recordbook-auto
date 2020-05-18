@@ -9,9 +9,10 @@
          <ul class="list-group">
             {% for invite in invites %}
                 <form  action="/student/invites" method="post">
-                    <input id="{{ invite.email }}"value="accept" name="type" hidden>
+                    <input id="{{ invite.email }}" value="accept" name="type" hidden>
                     <input value="{{ invite.email }}" name="email" hidden>
-              <li class="list-group-item"> {{ invite.email }} | {{ invite.club_name }} <button type="submit" class="primary">Accept</button> <button type="submit" class="danger" onclick="deleteInvite('{{ emails }}')">Delete</button></li>
+              <li class="list-group-item"> <h5>{{ invite.email }} | {{ invite.club_name }}</h5> <button  type="submit" class="btn btn-primary">Accept</button> <button type="submit" class="btn btn-danger" onclick="deleteInvite('{{ invite.email }}')">Delete</button></li>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
                     </form>
 

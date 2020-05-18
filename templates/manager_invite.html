@@ -7,8 +7,11 @@
 {% block main %}
     <h2>Invite students: </h2>
     <form action="/manager/invite" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
         <div class="form-group">
             <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Username" type="text">
+
         </div>
 
     <div class="form-group">

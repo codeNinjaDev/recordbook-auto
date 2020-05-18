@@ -15,12 +15,18 @@
         <h2>Student Login</h2>
     {% endif %}
     <form action="/{{ user }}/login" method="post">
+        {{ login_form.csrf_token }}
+
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            {{ login_form.email(class_="form-control", placeholder="Username") }}
+
         </div>
         <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password">
+            {{ login_form.password(class_="form-control", placeholder="Password") }}
         </div>
+        {% if login_form.errors %}
+            {{ login_form.errors }}
+        {% endif %}
         <button class="btn btn-primary" type="submit">Log In</button>
     </form>
 {% endblock %}

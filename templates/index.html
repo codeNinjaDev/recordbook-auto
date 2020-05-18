@@ -6,8 +6,11 @@
 
 {% block main %}
     <form action="/{{ user }}/generatedocx">
-      <input type="submit" value="Export Document" class="btn btn-primary">
+      <input type="submit" value="Generate Sample Report Form" class="btn btn-primary">
 
+    </form>
+    <form action="/{{ user }}/generatejournal">
+      <input style="margin: 12px;" type="submit" value="Generate 4-H Journal" class="btn btn-info">
     </form>
     <ul class="navbar-nav mr-auto mt-2">
           <li class="nav-item"><a class="nav-link btn btn-primary stretched-link" href="/{{ user }}/activity">Add Activity</a></li>
@@ -107,6 +110,30 @@
             <tr>
                 <td>{{ entry["year"] }}</td>
                 <td>{{ entry["activity"] }}</td>
+                <td>{{ entry["importance"] }}</td>
+            </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+        <h2>Project Experiences</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Project</th>
+          <th scope="col">Year</th>
+          <th scope="col">Experience</th>
+          <th scope="col">Hours</th>
+          <th scope="col">Importance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in projects %}
+            <tr>
+                <td>{{ entry["project_name"] }}</td>
+                <td>{{ entry["year"] }}</td>
+                <td>{{ entry["activity"] }}</td>
+                <td>{{ entry["hours"] }}</td>
                 <td>{{ entry["importance"] }}</td>
             </tr>
         {% endfor %}

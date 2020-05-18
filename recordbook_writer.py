@@ -1,7 +1,7 @@
 from sys import argv
 from docx import Document
 from enum import Enum
-
+from database import *
 import datetime
 
 def xstr(s):
@@ -26,19 +26,36 @@ class ServiceRole(Enum):
     MEMBER = "M"
     PRIMARY = "P"
 
-class RecordbookDict:
-    def __init__(self):
-        pass
+class JournalWriter:
 
-    def create_recordbook_dict(self):
-        book_dict = {
-                "personal_info": { "name": "", "county": "", "district": "", "division": "", "category": "", "club": ""},
-                "leadership": [],
-                "service": [],
-                "awards": [],
-                "career": []
-                }
-        return book_dict
+    def __init__(self, document_name):
+        self.document = Document(document_name)
+        self.document_name = document_name
+
+
+    def create_project_table(self, project_name, experiences):
+        project_title = self.document.add_paragraph()
+        project_title.text = project_name
+
+        project_table = self.document.add_table(len(experiences) + 1, 4)
+
+        keys = ["Year", "Project Activity", "Hours", "Importance to You"]
+        j = 0
+        for cell in project_table.rows[0].cells:
+            run = cell.paragraphs[0].add_run(keys[j])
+            run.bold = True
+            j += 1
+        i = 1
+        for experience in experiences:
+
+            project_table.cell(i, 0).text = experience.year
+            project_table.cell(i, 1).text = experience.activity
+            project_table.cell(i, 2).text = experience.hours
+            project_table.cell(i, 3).text = experience.importance
+            i += 1
+        self.document.save(self.document_name)
+
+
 
 class RecordbookWriter:
 

@@ -5,13 +5,8 @@
 {% endblock %}
 
 {% block main %}
-    <select class="primary selectpicker" id="forms" onchange="changeForm()" name="forms">
-      <option value="leadership">Leadership</option>
-      <option value="service">Service</option>
-      <option value="awards">Awards</option>
-      <option value="career">Career</option>
-    </select>
     {% if user == "manager" %}
+      <h4>Students involved:</h4>
       {% for email in students %}
           <div class="form-check">
             <input type="checkbox" class="checkbox" form="leadership_form" name="users" value = "{{ email }}" class="form-check-input">
@@ -19,38 +14,50 @@
           </div>
       {% endfor %}
     {% endif %}
+
+    <h4>Activity Type:</h4>
+    <select class="primary selectpicker" id="forms" onchange="changeForm()" name="forms">
+      <option value="leadership">Leadership</option>
+      <option value="service">Service</option>
+      <option value="award">Awards</option>
+      <option value="career">Career</option>
+      <option value="project">Project Experience</option>
+
+    </select>
+    {% if user == "manager" %}
+      <div id="leaderDiv" hidden>
+        <h5>Leader:</h5>
+        <select class="primary selectpicker" id="leader" name="leader" multiple title="Optional Leader">
+          {% for email in students %}
+              <option name="leader" value="{{ email }}">{{ email }}</option>
+
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
     <!--- Leadership Form --->
     <div id="leadership" class="entry_form">
         <form id="leadership_form" action="/{{ user }}/activity" method="post">
           <div class="row">
+            {{ leadership_form.csrf_token }}
             <div class="col">
-              <input name="year" type="number" class="form-control" placeholder="Year">
+              {{ leadership_form.year(class_="form-control", placeholder="Year") }}
             </div>
             <div class="col">
-              <input id="l-activity" name="l-activity" type="text" class="form-control" placeholder="Leadership Activity">
+              {{ leadership_form.activity(class_="form-control", placeholder="Leadership Activity") }}
             </div>
             <div class="col">
-                <select class="selectpicker" id="l-roles" name="l-roles" form="leadership_form">
-                  <option value="E">Elected</option>
-                  <option value="A">Appointed</option>
-                  <option value="V">Volunteer</option>
-                  <option value="P">Promotional</option>
-                </select>
-                <select class="selectpicker" id="l-level" name="l-level" form="leadership_form">
-                  <option value="Cl">Club</option>
-                  <option value="Co">County</option>
-                  <option value="D">District</option>
-                  <option value="S">State</option>
-                </select>
+                {{ leadership_form.role(class_="selectpicker") }}
+
+                {{ leadership_form.level(class_="selectpicker") }}
+
             </div>
             <div class="col">
-                <textarea name="duties" rows="4" cols="50">
-                    Responsibilities / Duties / Accomplishments
-                </textarea>
+                {{ leadership_form.importance(class_="form-control",placeholder="Responsiblities") }}
+
             </div>
           </div>
-          <input name="type" value="leadership" hidden>
-          <input type="submit" class="btn btn-primary" onclick="return submitLeadership();">
+          {{ leadership_form.lead_submit(class_="btn btn-primary") }}
         </form>
     </div>
 
@@ -58,61 +65,51 @@
     <div id="service" class="entry_form" hidden>
         <form id="service_form" action="/{{ user }}/activity" method="post">
           <div class="row">
-            <div class="col">
-              <input type="number" name="year" class="form-control" placeholder="Year">
-            </div>
-            <div class="col">
-                <select class="selectpicker" id="s-roles" name="s-roles" form="service_form">
-                  <option value="Y">Yourself</option>
-                  <option value="M">Member of a Group</option>
-                  <option value="P">Primary Leadership</option>
-                </select>
-            </div>
-            <div class="col">
-              <input type="text" id="s-activity" name="s-activity" class="form-control" placeholder="Service Activity">
-            </div>
+            {{ service_form.csrf_token }}
 
             <div class="col">
-                <textarea id="impact" name="impact" rows="4" cols="50">
-                    Importance and Impact
-                </textarea>
+              {{ service_form.year(class_="form-control",placeholder="Year") }}
+            </div>
+            <div class="col">
+              {{ service_form.activity(class_="form-control", placeholder="Service Activity") }}
+            </div>
+            <div class="col">
+                {{ service_form.role(class_="selectpicker") }}
+
+            </div>
+            <div class="col">
+                {{ service_form.importance(class_="form-control", placeholder="Importance") }}
+
             </div>
           </div>
-          <input name="type" value="service" hidden>
-          <input type="submit" class="btn btn-primary" onclick="return submitService();">
+          {{ service_form.service_submit(class_="btn btn-primary") }}
         </form>
     </div>
 
 
         <!--- Awards Form --->
-    <div id="awards" class="entry_form" hidden>
+    <div id="award" class="entry_form" hidden>
         <form id="award_form" action="/{{ user }}/activity" method="post">
           <div class="row">
-            <div class="col">
-              <input type="number" name="year" class="form-control" placeholder="Year">
-            </div>
-            <div class="col">
-                <select class="selectpicker" id="a-levels" name="a-levels" form="award_form">
-                  <option value="Cl">Club</option>
-                  <option value="Co">County</option>
-                  <option value="D">District</option>
-                  <option value="S">State</option>
-                  <option value="N">National</option>
-                  <option value="I">International</option>
-                </select>
-            </div>
-            <div class="col">
-              <input type="text" id="a-recognition" name="a-recognition" class="form-control" placeholder="Award Recognition">
-            </div>
+              {{ award_form.csrf_token }}
 
             <div class="col">
-                <textarea id="importance" name="importance" rows="4" cols="50">
-                    Importance
-                </textarea>
+              {{ award_form.year(class_="form-control", placeholder="Year") }}
+            </div>
+            <div class="col">
+              {{ award_form.recognition(class_="form-control", placeholder="Recognition") }}
+            </div>
+            <div class="col">
+
+                {{ award_form.level(class_="selectpicker") }}
+
+            </div>
+            <div class="col">
+                {{ award_form.importance(class_="form-control", placeholder="Importance") }}
+
             </div>
           </div>
-          <input name="type" value="award" hidden>
-          <input type="submit" class="btn btn-primary" onclick="return submitAward();">
+          {{ award_form.award_submit(class_="btn btn-primary") }}
         </form>
     </div>
 
@@ -120,22 +117,46 @@
     <div id="career" class="entry_form" hidden>
         <form id="career_form" action="/{{ user }}/activity" method="post">
           <div class="row">
+            {{ career_form.csrf_token }}
+
             <div class="col">
-              <input type="number" name="year" class="form-control" placeholder="Year">
+              {{ career_form.year(class_="form-control", placeholder="Year") }}
+            </div>
+            <div class="col">
+              {{ career_form.activity(class_="form-control", placeholder="Career Activity") }}
             </div>
 
             <div class="col">
-              <input type="text" id="c-activity" name="c-activity" class="form-control" placeholder="Activity Title">
-            </div>
-
-            <div class="col">
-                <textarea id="importance" name="importance" rows="4" cols="50">
-                  What did you learn or do?
-                </textarea>
+                {{ career_form.importance(class_="form-control", placeholder="Importance") }}
             </div>
           </div>
-          <input name="type" value="career" hidden>
-          <input type="submit" class="btn btn-primary" onclick="return submitCareer();">
+          {{ career_form.career_submit(class_="btn btn-primary") }}
+        </form>
+    </div>
+
+    <div id="project" class="entry_form" hidden>
+        <form id="project_form" action="/{{ user }}/activity" method="post">
+          <div class="row">
+            {{ project_form.csrf_token }}
+
+            <div class="col">
+              {{ project_form.project_name(class_="form-control", placeholder="Project Name") }}
+            </div>
+            <div class="col">
+              {{ project_form.year(class_="form-control", placeholder="Year") }}
+            </div>
+            <div class="col">
+              {{ project_form.activity(class_="form-control", placeholder="Project Experience") }}
+            </div>
+            <div class="col">
+              {{ project_form.hours(class_="form-control", placeholder="Hours") }}
+            </div>
+            <div class="col">
+                {{ project_form.importance(class_="form-control", placeholder="Importance") }}
+            </div>
+
+          </div>
+          {{ project_form.project_submit(class_="btn btn-primary") }}
         </form>
     </div>
 

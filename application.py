@@ -3,7 +3,7 @@ import shutil
 
 import json
 from docx import Document
-from recordbook_writer import RecordbookDict, RecordbookWriter, LeadershipRole, ServiceRole, Level
+from recordbook_writer import RecordbookWriter, LeadershipRole, ServiceRole, Level
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, flash, url_for, send_file
 from flask_session import Session
@@ -11,6 +11,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CsrfProtect
 
 from database import *
 from student import *
@@ -24,7 +25,12 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///record.db'
+app.secret_key = os.environ.get('SECRET_KEY')
 db.init_app(app)
+csrf = CsrfProtect(app)
+app.config['SESSION_COOKIE_SECURE'] = False
+
+
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -101,6 +107,11 @@ def register_student():
 def invites_student():
     return student_invites(request, db)
 
+@app.route("/student/generatejournal")
+@student_login_required
+def generate_journal_student():
+    return student_generate_journal(db, session)
+
 # MANAGER endpoints
 
 
@@ -131,6 +142,11 @@ def manage_invites():
 def generate_book_manager():
     return manager_generate_book(db, session)
 
+@app.route("/manager/generatejournal")
+@manager_login_required
+def generate_journal_manager():
+    return manager_generate_journal(db, session)
+
 @app.route("/manager/login", methods=["GET", "POST"])
 def login_manager():
     """Log manager in"""
@@ -158,6 +174,7 @@ def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
         e = InternalServerError()
+    print(e)
     return apology(e.name, e.code)
 
 

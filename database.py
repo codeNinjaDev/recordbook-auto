@@ -67,7 +67,7 @@ class Award(db.Model):
     importance = db.Column(db.String(256))
 
     def __repr__(self):
-        return '<Service %r>' % self.activity
+        return '<Award %r>' % self.recognition
 
 class Career(db.Model):
     __tablename__ = 'careers'
@@ -91,3 +91,17 @@ class Invitation(db.Model):
 
     def __repr__(self):
         return '<Manager %r>' % self.username
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    user_type = db.Column(db.String(8), nullable=False)
+    project_name = db.Column(db.String(128), nullable=False)
+    year = db.Column(db.String(5))
+    hours = db.Column(db.String(128))
+    activity = db.Column(db.String(256), nullable=False)
+    importance = db.Column(db.String(256))
+
+    def __repr__(self):
+        return '<Project %r>' % self.activity
