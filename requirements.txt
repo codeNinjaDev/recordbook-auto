@@ -1,4 +1,4 @@
-python3.8
+python==python-3.8
 alembic==1.4.2
 astroid==2.3.3
 attrs==19.3.0
