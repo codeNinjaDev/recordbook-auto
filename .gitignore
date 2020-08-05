@@ -1,4 +1,4 @@
 *.db
 *.json
 data/
-*.docx
+*.pyc
