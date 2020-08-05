@@ -15,7 +15,7 @@
         <h2>Register as Student</h2>
     {% endif %}
     <form action="/{{ user }}/register" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <div class="form-group">
         {% if error %}
@@ -38,6 +38,7 @@
 
       </div>
       <button type="submit" id="submit" onclick="return validate();" class="btn btn-primary">Register</button>
+
     </form>
 
 
