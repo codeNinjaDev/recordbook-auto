@@ -1,4 +1,4 @@
-#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3
+#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3.8
 
 # $Id: rst2latex.py 5905 2009-04-16 12:04:49Z milde $
 # Author: David Goodger <goodger@python.org>

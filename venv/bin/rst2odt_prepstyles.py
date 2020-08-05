@@ -1,4 +1,4 @@
-#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3
+#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3.8
 
 # $Id: rst2odt_prepstyles.py 5839 2009-01-07 19:09:28Z dkuhlman $
 # Author: Dave Kuhlman <dkuhlman@rexx.com>

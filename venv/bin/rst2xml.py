@@ -1,4 +1,4 @@
-#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3
+#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3.8
 
 # $Id: rst2xml.py 4564 2006-05-21 20:44:42Z wiemann $
 # Author: David Goodger <goodger@python.org>

@@ -1,4 +1,4 @@
-#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3
+#!/home/peter/ProgrammingProjects/recordbook-automation/venv/bin/python3.8
 
 import sys
 import json
