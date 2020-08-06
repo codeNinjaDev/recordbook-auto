@@ -12,7 +12,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 
 from database import *
 from student import *
@@ -27,7 +27,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object(os.environ['APP_SETTINGS'])
 db.init_app(app)
-csrf = CsrfProtect(app)
+csrf = CSRFProtect(app)
 app.config['SESSION_COOKIE_SECURE'] = False
 
 
