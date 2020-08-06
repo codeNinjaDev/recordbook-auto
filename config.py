@@ -5,10 +5,10 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    SECRET_KEY = '4U5IAmeHow'
+    SECRET_KEY = '5F5IAmeHow'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SERVER_NAME = "safe-bayou-60879.herokuapp.com"
-
+    SESSION_COOKIE_DOMAIN = "safe-bayou-60879.herokuapp.com"
 class ProductionConfig(Config):
     DEBUG = False
 
