@@ -7,7 +7,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = '4U5IAmeHow'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-
+    SERVER_NAME = "safe-bayou-60879.herokuapp.com"
 
 class ProductionConfig(Config):
     DEBUG = False
