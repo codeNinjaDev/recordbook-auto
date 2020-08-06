@@ -17,7 +17,6 @@
     <form action="/{{ user }}/login" method="post">
         {{ login_form.csrf_token }}
 
-        {{ login_form.hidden_tag() }}
         <div class="form-group">
             {{ login_form.email(class_="form-control", placeholder="Username") }}
 

@@ -26,7 +26,6 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object(os.environ['APP_SETTINGS'])
-app.secret_key = os.urandom(24)
 db.init_app(app)
 csrf = CsrfProtect(app)
 app.config['SESSION_COOKIE_SECURE'] = False
