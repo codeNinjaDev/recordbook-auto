@@ -25,7 +25,7 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "5F5IAmeHow"
-app.config["SQLALCHEMY_DATABASE_URI"] = "os.environ['DATABASE_URL']"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
 db.init_app(app)
 csrf = CSRFProtect(app)
 app.config['SESSION_COOKIE_SECURE'] = False
