@@ -28,7 +28,7 @@ app.secret_key = "5F5IAmeHow"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
 db.init_app(app)
 csrf = CSRFProtect(app)
-app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SECURE'] = True
 
 
 @app.after_request
