@@ -27,7 +27,7 @@ app.secret_key = b'_5#y2L"G3R8z\n\xec]'
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
-app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SECURE'] = True
 
 db.init_app(app)
 csrf = CSRFProtect(app)
