@@ -1,6 +1,6 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
-"""
+
 class Config(object):
     DEBUG = False
     TESTING = False
@@ -9,7 +9,6 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     #SERVER_NAME = "safe-bayou-60879.herokuapp.com"
     #SESSION_COOKIE_DOMAIN = "safe-bayou-60879.herokuapp.com"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///record.db"
 class ProductionConfig(Config):
     DEBUG = False
 
@@ -26,4 +25,3 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-"""
