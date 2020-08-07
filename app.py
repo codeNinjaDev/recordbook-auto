@@ -28,7 +28,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object(os.environ['APP_SETTINGS'])
 conn = psycopg2.connect(app.config["SQLALCHEMY_DATABASE_URI"], sslmode='require')
-
+print(app.config["SQLALCHEMY_DATABASE_URI"])
 db.init_app(app)
 csrf = CSRFProtect(app)
 
