@@ -23,11 +23,13 @@ from helpers import apology, student_login_required, manager_login_required
 # Configure application
 app = Flask(__name__)
 
+app.secret_key = "TEST_65HH"
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config.from_object(os.environ['APP_SETTINGS'])
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL'] 
 conn = psycopg2.connect(app.config["SQLALCHEMY_DATABASE_URI"], sslmode='require')
+
 print(app.config["SQLALCHEMY_DATABASE_URI"])
 db.init_app(app)
 csrf = CSRFProtect(app)
