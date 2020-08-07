@@ -23,8 +23,7 @@ from helpers import apology, student_login_required, manager_login_required
 app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
-app.config["SECRET_KEY"] = "5F5IAmeHow"
-app.secret_key = "5F5IAmeHow"
+app.secret_key = b'_5#y2L"G3R8z\n\xec]'
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
