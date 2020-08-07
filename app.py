@@ -51,6 +51,8 @@ Session(app)
 with app.app_context():
     try:
         db.create_all()
+        if not "csrf_token" in session.keys():
+            session["csrf_token"] = ""
     except:
         pass
 
