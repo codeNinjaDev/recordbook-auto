@@ -23,12 +23,14 @@ from helpers import apology, student_login_required, manager_login_required
 app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "5F5IAmeHow"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
+app.config['SESSION_COOKIE_SECURE'] = False
+
 db.init_app(app)
 csrf = CSRFProtect(app)
-app.config['SESSION_COOKIE_SECURE'] = True
 
 
 @app.after_request
@@ -40,9 +42,10 @@ def after_request(response):
 
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
+"""app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+"""
 Session(app)
 
 with app.app_context():
