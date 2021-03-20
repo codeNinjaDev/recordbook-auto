@@ -48,7 +48,7 @@ idna==2.8
 intervaltree==2.1.0
 itsdangerous==1.1.0
 jellyfish==0.7.2
-Jinja2==2.11.2
+Jinja2==2.11.3
 jmespath==0.9.4
 lazy-object-proxy==1.4.3
 lib50==2.0.7
